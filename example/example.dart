@@ -1,13 +1,3 @@
-locking
-=====
-
-The "locking" prevents the simultaneous execution of the "locked" code in the different zones.
-
-Version: 0.0.1
-
-Example:
-
-```dart
 import "dart:async";
 
 import "package:locking/lock.dart";
@@ -40,36 +30,8 @@ Future task(String name, int ms) async {
   await lock(_obj, () async {
     _running.add(name);
     print("$name: [${_running.join(", ")}]");
-    await sleep(new Duration(milliseconds: ms));    
+    await sleep(new Duration(milliseconds: ms));
     _running.remove(name);
     print("$name: finished");
   });
 }
-```
-
-Output:
-
-```
-=================
-Different zones
-=================
-task 0: [task 0]
-task 1: [task 0, task 1]
-task 1: finished
-task 0: finished
-task 2: [task 2]
-task 2: finished
-task 3: [task 3]
-task 3: finished
-=================
-The same zone
-=================
-task 0: [task 0]
-task 1: [task 0, task 1]
-task 2: [task 0, task 1, task 2]
-task 3: [task 0, task 1, task 2, task 3]
-task 3: finished
-task 2: finished
-task 1: finished
-task 0: finished
-```
