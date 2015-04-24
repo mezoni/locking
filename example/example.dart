@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:locking/lock.dart";
+import 'package:locking/locking.dart';
 
 Future main() async {
   print("=================");
