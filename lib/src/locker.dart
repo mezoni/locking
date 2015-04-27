@@ -50,7 +50,7 @@ class _Locker {
     if (_locked.length > 0) {
       var lock = _locked.removeFirst();
       if (lock.zone != Zone.current) {
-        throw new MutexStateException("Current zone does not hold a mutex");
+        throw new MutexStateException("Current zone does not hold this mutex");
       }
 
       if (_locked.length != 0) {
