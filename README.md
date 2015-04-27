@@ -3,7 +3,33 @@ locking
 
 The "locking" prevents the simultaneous execution of the "locked" code in the different zones.
 
-Version: 0.0.1
+Version: 0.0.
+
+Current implementation of locking:
+
+```dart
+Future lock(Object object, void action()) async {
+  Expando mutexes = _objects[object];
+  if (mutexes == null) {
+    mutexes = new Expando();
+    _objects[object] = mutexes;
+  }
+
+  var zone = Zone.current;
+  Mutex mutex = mutexes[zone];
+  if (mutex == null) {
+    mutex = new ReentrantMutex();
+    mutexes[zone] = mutex;
+  }
+
+  await mutex.acquire();
+  try {
+    await action();
+  } finally {
+    mutex.release();
+  }
+}
+```
 
 Example:
 
