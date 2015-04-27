@@ -1,7 +1,7 @@
 name: locking
-version: 0.0.5
+version: 0.0.6
 author: Andrew Mezoni <andrew.mezoni@gmail.com>
 description: The "locking" prevents the simultaneous execution of the "locked" code in the different zones.
 homepage: https://github.com/mezoni/locking
-dependencies:
+dev_dependencies:
   unittest: any

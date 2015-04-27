@@ -1,8 +1,6 @@
 part of locking;
 
 abstract class Mutex {
-  static Zone _zone;
-
   Future acquire();
 
   void release();
@@ -24,19 +22,11 @@ abstract class Mutex {
 }
 
 class NormalMutex extends _Mutex implements Mutex {
-  static final _NormalLocker _locker = new _NormalLocker();
-
-  _NormalLocker get locker {
-    return _locker;
-  }
+  final _Locker locker = new _Locker(_LockingStrategy.Normal);
 }
 
 class ReentrantMutex extends _Mutex implements Mutex {
-  static final _ReentrantLocker _locker = new _ReentrantLocker();
-
-  _ReentrantLocker get locker {
-    return _locker;
-  }
+  final _Locker locker = new _Locker(_LockingStrategy.Reentrant);
 }
 
 abstract class _Mutex {
@@ -44,24 +34,18 @@ abstract class _Mutex {
 
   Future acquire() {
     var zone = Zone.current;
-    var locker = this.locker;
-    var locked = new _ByRef<bool>();
-    var future = locker.lock(zone, locked);
-    if (locked.value) {
-      Mutex._zone = zone;
-    }
-
-    return future;
+    var lock = locker.lock(zone);
+    var completer = lock.completer;
+    return completer.future;
   }
 
   void release() {
-    var zone = Zone.current;
-    if (zone != Mutex._zone) {
-      _error("Current zone does not hold this mutex");
-    }
-
     var locker = this.locker;
-    Mutex._zone = locker.unlock(zone);
+    locker.unlock();
+  }
+
+  Future<bool> tryAcquire([Duration timeout]) async {
+    //
   }
 
   void _error(String message) {

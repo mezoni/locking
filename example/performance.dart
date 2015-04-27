@@ -2,7 +2,7 @@ import "dart:async";
 
 import 'package:locking/locking.dart';
 
-void main() {
+Future main() async {
   var count = 1000000;
   measure("lock $count times", () async {
     var obj = new Object();

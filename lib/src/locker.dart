@@ -1,83 +1,61 @@
 part of locking;
 
-abstract class _Locker<T extends _Lock> {
-  final Map<Zone, T> locks = new LinkedHashMap<Zone, T>();
+enum _LockingStrategy { Normal, Reentrant }
 
-  final Queue<T> queue = new Queue<T>();
+class _Locker {
+  final Queue<_Lock> queue = new Queue<_Lock>();
 
-  Future lock(Zone zone, _ByRef<bool> locked) {
+  final _LockingStrategy strategy;
+
+  _Locker(this.strategy) {
+    if (strategy == null) {
+      throw new ArgumentError.notNull("strategy");
+    }
+  }
+
+  _Lock lock(Zone zone) {
     if (zone == null) {
       throw new ArgumentError.notNull("zone");
     }
 
-    locked.value = false;
-    var lock = locks[zone];
-    if (lock == null) {
-      lock = newLock(zone);
-      locks[zone] = lock;
-      queue.add(lock);
-      if (queue.length == 1) {
-        locked.value = true;
+    var lock = new _Lock(zone);
+    queue.add(lock);
+    if (queue.length == 1) {
+      lock.completer.complete();
+    } else if (strategy == _LockingStrategy.Reentrant) {
+      if (queue.first.zone == zone) {
         lock.completer.complete();
       }
     }
 
-    lock.lock();
-    return lock.completer.future;
+    return lock;
   }
 
-  T newLock(Zone zone);
-
-  Zone unlock(Zone zone) {
-    if (zone == null) {
-      throw new ArgumentError.notNull("zone");
+  Zone unlock() {
+    if (queue.length == 0) {
+      throw new MutexStateException("Mutex is not held");
     }
 
-    if (locks.isEmpty) {
-      _error();
+    var lock = queue.removeFirst();
+    if (lock.zone != Zone.current) {
+      throw new MutexStateException("Current zone does not hold a mutex");
     }
 
-    var lock = locks[zone];
-    if (lock.zone != zone) {
-      _error();
+    var completer = lock.completer;
+    if (!completer.isCompleted) {
+      completer.complete();
     }
 
-    if (lock.unlock()) {
-      locks.remove(zone);
-      queue.removeFirst();
-      if (queue.length != 0) {
-        var next = queue.first;
-        next.completer.complete();
-        return next.zone;
-      }
-
+    if (queue.length == 0) {
       return null;
     }
 
-    return zone;
-  }
-
-  void _error() {
-    throw new MutexStateException("Current zone is not the owner of the mutex");
-  }
-}
-
-class _NormalLocker extends _Locker {
-  _NormalLock newLock(Zone zone) {
-    if (zone == null) {
-      throw new ArgumentError.notNull("zone");
+    lock = queue.first;
+    completer = lock.completer;
+    if (!completer.isCompleted) {
+      completer.complete();
     }
 
-    return new _NormalLock(zone);
-  }
-}
-
-class _ReentrantLocker extends _Locker {
-  _ReentrantLock newLock(Zone zone) {
-    if (zone == null) {
-      throw new ArgumentError.notNull("zone");
-    }
-
-    return new _ReentrantLock(zone);
+    return lock.zone;
   }
 }
