@@ -44,7 +44,7 @@ abstract class _Locker<T extends _Lock> {
 
     if (lock.unlock()) {
       locks.remove(zone);
-      assert(lock == queue.removeFirst());
+      queue.removeFirst();
       if (queue.length != 0) {
         var next = queue.first;
         next.completer.complete();
