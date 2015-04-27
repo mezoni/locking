@@ -1,19 +1,12 @@
 part of locking;
 
-final Expando _objects = new Expando();
+final Expando _mutexes = new Expando();
 
 Future lock(Object object, void action()) async {
-  Expando mutexes = _objects[object];
-  if (mutexes == null) {
-    mutexes = new Expando();
-    _objects[object] = mutexes;
-  }
-
-  var zone = Zone.current;
-  Mutex mutex = mutexes[zone];
+  ReentrantMutex mutex = _mutexes[object];
   if (mutex == null) {
     mutex = new ReentrantMutex();
-    mutexes[zone] = mutex;
+    _mutexes[object] = mutex;
   }
 
   await mutex.acquire();

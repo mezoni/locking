@@ -8,18 +8,13 @@ Version: 0.0.
 Current implementation of locking:
 
 ```dart
-Future lock(Object object, void action()) async {
-  Expando mutexes = _objects[object];
-  if (mutexes == null) {
-    mutexes = new Expando();
-    _objects[object] = mutexes;
-  }
+final Expando _mutexes = new Expando();
 
-  var zone = Zone.current;
-  Mutex mutex = mutexes[zone];
+Future lock(Object object, void action()) async {
+  ReentrantMutex mutex = _mutexes[object];
   if (mutex == null) {
     mutex = new ReentrantMutex();
-    mutexes[zone] = mutex;
+    _mutexes[object] = mutex;
   }
 
   await mutex.acquire();
