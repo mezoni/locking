@@ -1,5 +1,5 @@
 name: locking
-version: 0.0.3
+version: 0.0.4
 author: Andrew Mezoni <andrew.mezoni@gmail.com>
 description: The "locking" prevents the simultaneous execution of the "locked" code in the different zones.
 homepage: https://github.com/mezoni/locking

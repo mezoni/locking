@@ -9,4 +9,3 @@ part 'src/lock.dart';
 part 'src/locker.dart';
 part 'src/locking.dart';
 part 'src/mutex.dart';
-part 'src/objects.dart';
