@@ -6,7 +6,7 @@
 import "dart:async";
 
 import "package:locking/locking.dart";
-import "package:unittest/unittest.dart";
+import "package:test/test.dart";
 
 Mutex _mutex = new NormalMutex();
 
